@@ -1,0 +1,15 @@
+{
+    "id": "ca8c82d6-3b6d-4748-b66d-7d46e276b898",
+    "version": "0.0.1",
+    "requiredApiVersion": "^0.9.13",
+    "iconFile": "icon.png",
+    "author": {
+        "name": "Marcos Defendi",
+        "homepage": "https://github.com/MarcosSpessatto/scratch-rocketchat-app",
+        "support": "https://github.com/MarcosSpessatto/scratch-rocketchat-app"
+    },
+    "name": "Scratch-bot",
+    "nameSlug": "scratch-bot",
+    "classFile": "ScratchBotApp.ts",
+    "description": "Chatbot to help new Scratchers"
+}
