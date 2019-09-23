@@ -5,8 +5,8 @@ root = true
 
 # Unix-style newlines with a newline ending every file
 [*]
-indent_style = space
-indent_size = 4
+indent_style = tabs
+indent_size = 2
 charset = utf-8
 end_of_line = lf
 insert_final_newline = true
