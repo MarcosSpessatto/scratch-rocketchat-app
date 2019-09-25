@@ -10,19 +10,27 @@ export class NluSdk {
 	}
 
 	public async parseMessage(message: string): Promise<any> {
-		return (await this.http.post(`${this.url}/model/parse`, {
+		const result = await this.http.post(`${this.url}/model/parse`, {
 			data: {
 				text: message,
 			},
-		})).data;
+		});
+		if (!result) {
+			return;
+		}
+		return result.data;
 	}
 
 	public async recognizeMessage(message: string, username: string): Promise<any> {
-		return (await this.http.post(`${this.url}/webhooks/rest/webhook`, {
+		const result = await this.http.post(`${this.url}/webhooks/rest/webhook`, {
 			data: {
 				sender: username,
 				message,
 			},
-		})).data;
+		});
+		if (!result) {
+			return;
+		}
+		return result.data;
 	}
 }

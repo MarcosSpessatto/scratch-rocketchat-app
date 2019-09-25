@@ -24,4 +24,9 @@ export class StorageHelper {
 		const association = new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, associationName);
 		return await this.writePersistence.updateByAssociation(association, data);
 	}
+
+	public async removeItem(associationName: string): Promise<any> {
+		const association = new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, associationName);
+		return await this.writePersistence.removeByAssociation(association);
+	}
 }

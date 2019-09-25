@@ -27,10 +27,10 @@ export class ScratchBotApp extends App implements IPostMessageSent {
 		try {
 			if (message.sender.id !== 'rocket.cat') {
 				const isLivechatMessage = message.room.type === 'l';
-				const nluServiceUrl = (await read.getEnvironmentReader().getServerSettings().getOneById(AppSetting.botCoreServiceUrl)).value;
+				const nluServiceUrl = (await read.getEnvironmentReader().getSettings().getById(AppSetting.botCoreServiceUrl)).value || 'http://192.168.0.11:5005';
 				if (isLivechatMessage) {
 					new LivechatMessageHandler(
-						new RoomHelper(read),
+						new RoomHelper(read, modify),
 						new UserHelper(read),
 						new MessageHelper(modify),
 						new NluSdk(http, nluServiceUrl),

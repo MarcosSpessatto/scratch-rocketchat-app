@@ -8,7 +8,11 @@ export class SettingsHelper {
 		this.read = read;
 	}
 
-	public async getSettingById(setting: string): Promise<ISetting> {
+	public async getServerSettingById(setting: string): Promise<ISetting> {
 		return this.read.getEnvironmentReader().getServerSettings().getOneById(setting);
+	}
+
+	public async getAppSettingById(setting: string): Promise<ISetting> {
+		return this.read.getEnvironmentReader().getSettings().getById(setting);
 	}
 }

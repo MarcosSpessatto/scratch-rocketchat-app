@@ -2,7 +2,8 @@ import { ISetting, SettingType } from '@rocket.chat/apps-engine/definition/setti
 
 export enum AppSetting {
 	botCoreServiceUrl = 'bot_core_service_api_url',
-	howManyTriesUntilSendToHuman = 'how_many_tries_until_send_to_human',
+	howManyAttemptsUntilRedirectToHuman = 'how_many_attempts_until_redirect_to_human',
+	tryToRedirectFirstToUser = 'try_to_redirect_first_to_user',
 }
 
 export const settings: Array<ISetting> = [
@@ -16,12 +17,21 @@ export const settings: Array<ISetting> = [
 		i18nDescription: 'bot_core_service_url_description',
 	},
 	{
-		id: AppSetting.howManyTriesUntilSendToHuman,
+		id: AppSetting.howManyAttemptsUntilRedirectToHuman,
 		type: SettingType.NUMBER,
 		packageValue: 5,
 		required: true,
 		public: true,
-		i18nLabel: 'how_many_tries_until_send_to_human_label',
-		i18nDescription: 'how_many_tries_until_send_to_human_description',
+		i18nLabel: 'how_many_attempts_until_redirect_to_human_label',
+		i18nDescription: 'how_many_attempts_until_redirect_to_human_description',
+	},
+	{
+		id: AppSetting.tryToRedirectFirstToUser,
+		type: SettingType.BOOLEAN,
+		packageValue: true,
+		required: true,
+		public: true,
+		i18nLabel: 'try_to_redirect_first_to_user_label',
+		i18nDescription: 'try_to_redirect_first_to_user_description',
 	},
 ];

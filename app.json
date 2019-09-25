@@ -8,7 +8,7 @@
         "homepage": "https://github.com/MarcosSpessatto/scratch-rocketchat-app",
         "support": "https://github.com/MarcosSpessatto/scratch-rocketchat-app"
     },
-    "name": "Scratch-bot",
+    "name": "Scratch Bot",
     "nameSlug": "scratch-bot",
     "classFile": "ScratchBotApp.ts",
     "description": "Chatbot to help new Scratchers"
