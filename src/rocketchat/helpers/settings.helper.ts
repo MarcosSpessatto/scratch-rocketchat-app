@@ -15,4 +15,12 @@ export class SettingsHelper {
 	public async getAppSettingById(setting: string): Promise<ISetting> {
 		return this.read.getEnvironmentReader().getSettings().getById(setting);
 	}
+
+	public async getValueOfServerSettingById(setting: string): Promise<any> {
+		return this.read.getEnvironmentReader().getServerSettings().getValueById(setting);
+	}
+
+	public async getValueOfAppSettingById(setting: string): Promise<any> {
+		return this.read.getEnvironmentReader().getSettings().getValueById(setting);
+	}
 }
