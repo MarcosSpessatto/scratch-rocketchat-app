@@ -1,15 +1,21 @@
 import {
+	IAppAccessors,
 	IConfigurationExtend,
+	IConfigurationModify,
+	IEnvironmentRead,
 	IHttp,
 	ILogger,
 	IModify,
 	IPersistence,
 	IRead,
 } from '@rocket.chat/apps-engine/definition/accessors';
+import { ApiSecurity, ApiVisibility } from '@rocket.chat/apps-engine/definition/api';
 import { App } from '@rocket.chat/apps-engine/definition/App';
 import { IMessage, IPostMessageSent } from '@rocket.chat/apps-engine/definition/messages';
 import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
+import { CronJobSetup } from './src/config/cron-job-setup';
 import { AppSetting, settings } from './src/config/settings';
+import { MicroLearningEndpoint } from './src/endpoints/microlearning';
 import { LivechatMessageHandler } from './src/handlers/livechat-messages.handler';
 import { MessageHelper } from './src/helpers/message.helper';
 import { RoomHelper } from './src/helpers/room.helper';
@@ -19,8 +25,14 @@ import { UserHelper } from './src/helpers/user.helper';
 import { NluSdk } from './src/nlu-sdk/nlu-sdk';
 
 export class ScratchBotApp extends App implements IPostMessageSent {
-	constructor(info: IAppInfo, logger: ILogger) {
-		super(info, logger);
+	private cronJobSetup: CronJobSetup;
+
+	constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
+		super(info, logger, accessors);
+	}
+
+	public async initialize(): Promise<void> {
+		this.cronJobSetup = new CronJobSetup(this.getAccessors().http);
 	}
 
 	public async executePostMessageSent(message: IMessage, read: IRead, http: IHttp, persistence: IPersistence, modify: IModify): Promise<void> {
@@ -44,7 +56,20 @@ export class ScratchBotApp extends App implements IPostMessageSent {
 		}
 	}
 
-	protected async extendConfiguration(configuration: IConfigurationExtend): Promise<void> {
+	protected async extendConfiguration(configuration: IConfigurationExtend, environmentRead: IEnvironmentRead): Promise<void> {
 		await Promise.all(settings.map((setting) => configuration.settings.provideSetting(setting)));
+
+		await configuration.api.provideApi({
+			visibility: ApiVisibility.PRIVATE,
+			security: ApiSecurity.UNSECURE,
+			endpoints: [
+				new MicroLearningEndpoint(this),
+			],
+		});
+		const endpoint = this.getAccessors().providedApiEndpoints && this.getAccessors().providedApiEndpoints.length && this.getAccessors().providedApiEndpoints[0].computedPath;
+		if (endpoint) {
+			const siteUrl = 'http://192.168.0.11:3000'; // (await environmentRead.getServerSettings().getOneById('Site_Url')).value;
+			this.cronJobSetup.setup(`${siteUrl}${endpoint}`);
+		}
 	}
 }
