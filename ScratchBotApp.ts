@@ -13,25 +13,26 @@ import { ApiSecurity, ApiVisibility } from '@rocket.chat/apps-engine/definition/
 import { App } from '@rocket.chat/apps-engine/definition/App';
 import { IMessage, IPostMessageSent } from '@rocket.chat/apps-engine/definition/messages';
 import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
-import { CronJobSetup } from './src/rocketchat/config/cron-job-setup';
-import { AppSetting, settings } from './src/rocketchat/config/settings';
-import { MicroLearningEndpoint } from './src/rocketchat/endpoints/microlearning';
-import { LivechatMessageHandler } from './src/rocketchat/handlers/livechat-messages.handler';
-import { MessageHelper } from './src/rocketchat/helpers/message.helper';
-import { RoomHelper } from './src/rocketchat/helpers/room.helper';
-import { SettingsHelper } from './src/rocketchat/helpers/settings.helper';
-import { StorageHelper } from './src/rocketchat/helpers/storage.helper';
-import { UserHelper } from './src/rocketchat/helpers/user.helper';
-import { NluSdk } from './src/rocketchat/nlu-sdk/nlu-sdk';
+import { CronJobSetup } from './src/config/cron-job-setup';
+import { AppSetting, settings } from './src/config/settings';
+import { MicroLearningEndpoint } from './src/endpoints/microlearning';
+import { LivechatMessageHandler } from './src/handlers/livechat-messages.handler';
+import { MessageHelper } from './src/helpers/message.helper';
+import { RoomHelper } from './src/helpers/room.helper';
+import { SettingsHelper } from './src/helpers/settings.helper';
+import { StorageHelper } from './src/helpers/storage.helper';
+import { UserHelper } from './src/helpers/user.helper';
+import { NluSdk } from './src/nlu-sdk/nlu-sdk';
 
 export class ScratchBotApp extends App implements IPostMessageSent {
 	private cronJobSetup: CronJobSetup;
-	private acessors: IAppAccessors;
 
 	constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
-		super(info, logger);
-		this.cronJobSetup = new CronJobSetup(accessors.http);
-		this.acessors = accessors;
+		super(info, logger, accessors);
+	}
+
+	public async initialize(): Promise<void> {
+		this.cronJobSetup = new CronJobSetup(this.getAccessors().http);
 	}
 
 	public async executePostMessageSent(message: IMessage, read: IRead, http: IHttp, persistence: IPersistence, modify: IModify): Promise<void> {
@@ -65,7 +66,7 @@ export class ScratchBotApp extends App implements IPostMessageSent {
 				new MicroLearningEndpoint(this),
 			],
 		});
-		const endpoint = this.acessors.providedApiEndpoints && this.acessors.providedApiEndpoints.length && this.acessors.providedApiEndpoints[0].computedPath;
+		const endpoint = this.getAccessors().providedApiEndpoints && this.getAccessors().providedApiEndpoints.length && this.getAccessors().providedApiEndpoints[0].computedPath;
 		if (endpoint) {
 			const siteUrl = 'http://192.168.0.11:3000'; // (await environmentRead.getServerSettings().getOneById('Site_Url')).value;
 			this.cronJobSetup.setup(`${siteUrl}${endpoint}`);

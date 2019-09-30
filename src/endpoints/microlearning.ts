@@ -1,6 +1,6 @@
 import { IHttp, IModify, IPersistence, IRead } from '@rocket.chat/apps-engine/definition/accessors';
 import { ApiEndpoint, IApiEndpointInfo, IApiRequest, IApiResponse } from '@rocket.chat/apps-engine/definition/api';
-import { ScratchBotApp } from '../../../ScratchBotApp';
+import { ScratchBotApp } from '../../ScratchBotApp';
 import { MicrolearningHandler } from '../handlers/microlearning.handler';
 import { MessageHelper } from '../helpers/message.helper';
 import { RoomHelper } from '../helpers/room.helper';

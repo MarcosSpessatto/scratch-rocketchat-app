@@ -1,4 +1,3 @@
-import { AppSetting } from './../config/settings';
 import { IMessage } from '@rocket.chat/apps-engine/definition/messages';
 import { IRoom } from '@rocket.chat/apps-engine/definition/rooms';
 import { IUser } from '@rocket.chat/apps-engine/definition/users';
@@ -6,6 +5,7 @@ import { RoomHelper } from '../helpers/room.helper';
 import { SettingsHelper } from '../helpers/settings.helper';
 import { StorageHelper } from '../helpers/storage.helper';
 import { NluSdk } from '../nlu-sdk/nlu-sdk';
+import { AppSetting } from './../config/settings';
 import { MessageHelper } from './../helpers/message.helper';
 import { UserHelper } from './../helpers/user.helper';
 import { fallbackMessages } from './fallback-messages';
