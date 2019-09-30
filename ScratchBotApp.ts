@@ -31,10 +31,6 @@ export class ScratchBotApp extends App implements IPostMessageSent {
 		super(info, logger, accessors);
 	}
 
-	public async initialize(): Promise<void> {
-		this.cronJobSetup = new CronJobSetup(this.getAccessors().http);
-	}
-
 	public async executePostMessageSent(message: IMessage, read: IRead, http: IHttp, persistence: IPersistence, modify: IModify): Promise<void> {
 		try {
 			if (message.sender.id !== 'rocket.cat') {
@@ -57,6 +53,7 @@ export class ScratchBotApp extends App implements IPostMessageSent {
 	}
 
 	protected async extendConfiguration(configuration: IConfigurationExtend, environmentRead: IEnvironmentRead): Promise<void> {
+		this.cronJobSetup = new CronJobSetup(this.getAccessors().http);
 		await Promise.all(settings.map((setting) => configuration.settings.provideSetting(setting)));
 
 		await configuration.api.provideApi({
@@ -68,7 +65,7 @@ export class ScratchBotApp extends App implements IPostMessageSent {
 		});
 		const endpoint = this.getAccessors().providedApiEndpoints && this.getAccessors().providedApiEndpoints.length && this.getAccessors().providedApiEndpoints[0].computedPath;
 		if (endpoint) {
-			const siteUrl = 'http://192.168.0.11:3000'; // (await environmentRead.getServerSettings().getOneById('Site_Url')).value;
+			const siteUrl = (await environmentRead.getServerSettings().getOneById('Site_Url')).value;
 			this.cronJobSetup.setup(`${siteUrl}${endpoint}`);
 		}
 	}

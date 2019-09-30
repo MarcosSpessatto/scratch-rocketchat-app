@@ -1,3 +1,4 @@
+import { Analytics } from './../analytics/analytics';
 import { IHttp, IModify, IPersistence, IRead } from '@rocket.chat/apps-engine/definition/accessors';
 import { ApiEndpoint, IApiEndpointInfo, IApiRequest, IApiResponse } from '@rocket.chat/apps-engine/definition/api';
 import { ScratchBotApp } from '../../ScratchBotApp';
@@ -20,6 +21,7 @@ export class MicroLearningEndpoint extends ApiEndpoint {
 				new UserHelper(read),
 				new RoomHelper(read, modify),
 				new MessageHelper(modify),
+				new Analytics(http),
 			).run();
 		} catch (error) {
 			console.log(error);

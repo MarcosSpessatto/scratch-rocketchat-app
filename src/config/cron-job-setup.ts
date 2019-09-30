@@ -4,7 +4,7 @@ export class CronJobSetup {
 	private http: IHttp;
 	private CRON_NAME: string = 'rocketchat-scratch';
 
-	constructor(http: IHttp, ) {
+	constructor(http: IHttp) {
 		this.http = http;
 	}
 
