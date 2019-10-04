@@ -1,3 +1,4 @@
+import { Analytics } from './src/analytics/analytics';
 import {
 	IAppAccessors,
 	IConfigurationExtend,
@@ -23,6 +24,7 @@ import { SettingsHelper } from './src/helpers/settings.helper';
 import { StorageHelper } from './src/helpers/storage.helper';
 import { UserHelper } from './src/helpers/user.helper';
 import { NluSdk } from './src/nlu-sdk/nlu-sdk';
+import { MicrolearningHandler } from './src/handlers/microlearning.handler';
 
 export class ScratchBotApp extends App implements IPostMessageSent {
 	private cronJobSetup: CronJobSetup;
@@ -37,7 +39,7 @@ export class ScratchBotApp extends App implements IPostMessageSent {
 				const isLivechatMessage = message.room.type === 'l';
 				const nluServiceUrl = (await read.getEnvironmentReader().getSettings().getById(AppSetting.botCoreServiceUrl)).value || 'http://192.168.0.11:5005';
 				if (isLivechatMessage) {
-					new LivechatMessageHandler(
+					return new LivechatMessageHandler(
 						new RoomHelper(read, modify),
 						new UserHelper(read),
 						new MessageHelper(modify),
@@ -46,6 +48,13 @@ export class ScratchBotApp extends App implements IPostMessageSent {
 						new SettingsHelper(read))
 						.run(message);
 				}
+				return new MicrolearningHandler(
+					new UserHelper(read),
+					new RoomHelper(read, modify),
+					new MessageHelper(modify),
+					new StorageHelper(persistence, read.getPersistenceReader()),
+					new Analytics(http),
+				).run(message);
 			}
 		} catch (error) {
 			console.log(error);

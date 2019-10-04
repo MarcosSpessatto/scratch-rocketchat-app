@@ -30,20 +30,20 @@ export class LivechatMessageHandler {
 	public async run(message: IMessage): Promise<any> {
 		const userWhoSentTheMessage = await this.userHelper.getUserByUsername(message.sender.username);
 		const roomThatGenerateTheMessage = message.room;
-		const userToSendMessagesAsBot = await this.userHelper.getUserByUsername('rocket.cat');
+		const userToSendMessagesAsABot = await this.userHelper.getUserByUsername('rocket.cat');
 		const nluParsedMessage = await this.nluSdk.parseMessage(message.text as string);
 		const howManyAttempsUntilRedirectToHuman = (await this.settingsHelper.getAppSettingById(AppSetting.howManyAttemptsUntilRedirectToHuman)).value;
 		const tryToRedirectFirstToUser = (await this.settingsHelper.getAppSettingById(AppSetting.tryToRedirectFirstToUser)).value;
 		const nluServiceHasRecognizedMessage = nluParsedMessage && nluParsedMessage.intent && Boolean(nluParsedMessage.intent.name) && nluParsedMessage.intent.confidence > 0.3;
 		if (nluServiceHasRecognizedMessage) {
-			const nluServiceResponses = await this.nluSdk.recognizeMessage(message.text as string, message.sender.username);
-			await this.replyWithAllNluMessages(roomThatGenerateTheMessage, userToSendMessagesAsBot, nluServiceResponses);
+			const nluServiceResponses = await this.nluSdk.getResponsesFromBotCore(message.text as string, message.sender.username);
+			await this.replyWithAllNluMessages(roomThatGenerateTheMessage, userToSendMessagesAsABot, nluServiceResponses);
 			return await this.resetAttemptsToTryToRecognize(userWhoSentTheMessage.id);
 		}
 		const attempts = await this.storageHelper.getItem(userWhoSentTheMessage.id);
 		const needsRedirectMessageToHuman = Boolean(attempts.length && attempts[0].attempts >= howManyAttempsUntilRedirectToHuman);
 		if (needsRedirectMessageToHuman) {
-			await this.sendMessageToNotifyUserOfRedirection(roomThatGenerateTheMessage, userToSendMessagesAsBot);
+			await this.sendMessageToNotifyUserOfRedirection(roomThatGenerateTheMessage, userToSendMessagesAsABot);
 			const roomToSendAskForHelp = await this.roomHelper.getRoomByRoomName('scratch');
 			const classMembers = await this.roomHelper.getRoomMembersByRoomName('scratch');
 			const userAbleToHelp = await this.findUserAbleToHelp(classMembers);
@@ -51,18 +51,18 @@ export class LivechatMessageHandler {
 			if (tryToRedirectFirstToUser && userAbleToHelp) {
 				const messageSendToDM = await this.sendMessageDirectlyToUserAbleToHelp(userAbleToHelp, userWhoSentTheMessage, message.text as string);
 				const messageDMLink = await this.getLinkOfMessageToAskForHelp(messageSendToDM, 'direct', userAbleToHelp.username);
-				return await this.sendMessageToNotifyUserOfRedirectionToHuman(roomThatGenerateTheMessage, userToSendMessagesAsBot, messageDMLink, 'direct');
+				return await this.sendMessageToNotifyUserOfRedirectionToHuman(roomThatGenerateTheMessage, userToSendMessagesAsABot, messageDMLink, 'direct');
 			}
-			const messageSendToGroup = await this.sendMessageToClassRoomToAskForHelp(roomToSendAskForHelp, userToSendMessagesAsBot, userWhoSentTheMessage, message.text as string);
+			const messageSendToGroup = await this.sendMessageToClassRoomToAskForHelp(roomToSendAskForHelp, userToSendMessagesAsABot, userWhoSentTheMessage, message.text as string);
 			const messageGroupLink = await this.getLinkOfMessageToAskForHelp(messageSendToGroup, 'channel');
-			return await this.sendMessageToNotifyUserOfRedirectionToHuman(roomThatGenerateTheMessage, userToSendMessagesAsBot, messageGroupLink);
+			return await this.sendMessageToNotifyUserOfRedirectionToHuman(roomThatGenerateTheMessage, userToSendMessagesAsABot, messageGroupLink);
 		}
 		// tslint:disable-next-line: radix
 		const isTheLastAttemptToTryToRecognize = attempts[0] && attempts[0].attempts === parseInt(howManyAttempsUntilRedirectToHuman) - 1;
 		if (isTheLastAttemptToTryToRecognize) {
-			await this.notifyUserAboutTheLastAttemptToTryToRecognize(roomThatGenerateTheMessage, userToSendMessagesAsBot);
+			await this.notifyUserAboutTheLastAttemptToTryToRecognize(roomThatGenerateTheMessage, userToSendMessagesAsABot);
 		} else {
-			await this.sendFallbackMessage(roomThatGenerateTheMessage, userToSendMessagesAsBot);
+			await this.sendFallbackMessage(roomThatGenerateTheMessage, userToSendMessagesAsABot);
 		}
 		await this.incrementFallbackMessage(userWhoSentTheMessage, attempts[0] && attempts[0].attempts);
 	}

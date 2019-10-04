@@ -21,7 +21,7 @@ export class NluSdk {
 		return result.data;
 	}
 
-	public async recognizeMessage(message: string, username: string): Promise<any> {
+	public async getResponsesFromBotCore(message: string, username: string): Promise<any> {
 		const result = await this.http.post(`${this.url}/webhooks/rest/webhook`, {
 			data: {
 				sender: username,

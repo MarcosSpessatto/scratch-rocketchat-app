@@ -1,5 +1,5 @@
 import { IPersistence, IPersistenceRead } from '@rocket.chat/apps-engine/definition/accessors';
-import { RocketChatAssociationRecord, RocketChatAssociationModel } from '@rocket.chat/apps-engine/definition/metadata';
+import { RocketChatAssociationModel, RocketChatAssociationRecord } from '@rocket.chat/apps-engine/definition/metadata';
 
 export class StorageHelper {
 	private writePersistence: IPersistence;
@@ -10,23 +10,23 @@ export class StorageHelper {
 		this.readPersistence = readPersistence;
 	}
 
-	public async getItem(associationName: string): Promise<any> {
-		const association = new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, associationName);
+	public async getItem(associationName: string, type?: RocketChatAssociationModel): Promise<any> {
+		const association = new RocketChatAssociationRecord(type || RocketChatAssociationModel.MISC, associationName);
 		return await this.readPersistence.readByAssociation(association);
 	}
 
-	public async setItem(associationName: string, data: any): Promise<any> {
-		const association = new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, associationName);
+	public async setItem(associationName: string, data: any, type?: RocketChatAssociationModel): Promise<any> {
+		const association = new RocketChatAssociationRecord(type || RocketChatAssociationModel.MISC, associationName);
 		return await this.writePersistence.createWithAssociation(data, association);
 	}
 
-	public async updateItem(associationName: string, data: any): Promise<any> {
-		const association = new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, associationName);
-		return await this.writePersistence.updateByAssociation(association, data);
+	public async updateItem(associationName: string, data: any, type?: RocketChatAssociationModel, upsert?: boolean): Promise<any> {
+		const association = new RocketChatAssociationRecord(type || RocketChatAssociationModel.MISC, associationName);
+		return await this.writePersistence.updateByAssociation(association, data, upsert || false);
 	}
 
-	public async removeItem(associationName: string): Promise<any> {
-		const association = new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, associationName);
+	public async removeItem(associationName: string, type?: RocketChatAssociationModel): Promise<any> {
+		const association = new RocketChatAssociationRecord(type || RocketChatAssociationModel.MISC, associationName);
 		return await this.writePersistence.removeByAssociation(association);
 	}
 }
