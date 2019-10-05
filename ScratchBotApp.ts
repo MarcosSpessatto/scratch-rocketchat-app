@@ -1,4 +1,3 @@
-import { Analytics } from './src/analytics/analytics';
 import {
 	IAppAccessors,
 	IConfigurationExtend,
@@ -14,17 +13,19 @@ import { ApiSecurity, ApiVisibility } from '@rocket.chat/apps-engine/definition/
 import { App } from '@rocket.chat/apps-engine/definition/App';
 import { IMessage, IPostMessageSent } from '@rocket.chat/apps-engine/definition/messages';
 import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
+import { Analytics } from './src/analytics/analytics';
+import { Commands } from './src/commands/commands';
 import { CronJobSetup } from './src/config/cron-job-setup';
 import { AppSetting, settings } from './src/config/settings';
 import { MicroLearningEndpoint } from './src/endpoints/microlearning';
 import { LivechatMessageHandler } from './src/handlers/livechat-messages.handler';
+import { MicrolearningHandler } from './src/handlers/microlearning.handler';
 import { MessageHelper } from './src/helpers/message.helper';
 import { RoomHelper } from './src/helpers/room.helper';
 import { SettingsHelper } from './src/helpers/settings.helper';
 import { StorageHelper } from './src/helpers/storage.helper';
 import { UserHelper } from './src/helpers/user.helper';
 import { NluSdk } from './src/nlu-sdk/nlu-sdk';
-import { MicrolearningHandler } from './src/handlers/microlearning.handler';
 
 export class ScratchBotApp extends App implements IPostMessageSent {
 	private cronJobSetup: CronJobSetup;
@@ -77,5 +78,6 @@ export class ScratchBotApp extends App implements IPostMessageSent {
 			const siteUrl = (await environmentRead.getServerSettings().getOneById('Site_Url')).value;
 			this.cronJobSetup.setup(`${siteUrl}${endpoint}`);
 		}
+		await configuration.slashCommands.provideSlashCommand(new Commands());
 	}
 }

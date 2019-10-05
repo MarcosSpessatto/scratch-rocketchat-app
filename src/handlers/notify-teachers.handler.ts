@@ -3,11 +3,11 @@ import { RocketChatAssociationModel } from '@rocket.chat/apps-engine/definition/
 import { IRoom } from '@rocket.chat/apps-engine/definition/rooms';
 import { IUser } from '@rocket.chat/apps-engine/definition/users';
 import { IAnalytics, IUserWhoAsked, IUserWhoRespond } from '../analytics/analytics.interface';
+import { IListen } from '../helpers/listen.interface';
 import { MessageHelper } from '../helpers/message.helper';
 import { RoomHelper } from '../helpers/room.helper';
 import { StorageHelper } from '../helpers/storage.helper';
 import { UserHelper } from '../helpers/user.helper';
-import { IListen } from '../helpers/listen.interface';
 
 export class NotifyTeachersHandler {
 	private userHelper: UserHelper;
@@ -24,7 +24,7 @@ export class NotifyTeachersHandler {
 		this.analytics = analytics;
 	}
 
-	public async run(): Promise<void> {
+	public async run(context: string): Promise<void> {
 		const usersToSendListOfStudents = (await this.roomHelper.getRoomMembersByRoomName('scratch')).filter(this.needToSendListOfStudents);
 		const students = (await this.roomHelper.getRoomMembersByRoomName('scratch')).filter(this.isStudent);
 		const usersWhoAskedMost = await this.analytics.findUsersWhoAskedMost();
@@ -34,8 +34,9 @@ export class NotifyTeachersHandler {
 			for (const userToSend of usersToSendListOfStudents) {
 				const receiver = await this.userHelper.getUserByUsername(userToSend.username);
 				const dm = (await this.roomHelper.getRoomById(await this.roomHelper.createDMRoom(sender, receiver)));
-				await this.sendMicrolearningHourMessage(dm, sender);
-				await this.sendMessageOfUserWhoAskedMost(dm, sender, usersWhoAskedMost);
+				if (context === 'endpoint') {
+					await this.sendMicrolearningHourMessage(dm, sender);
+				}
 				await this.sendMessageOfUserWhoAskedMost(dm, sender, usersWhoAskedMost);
 				await this.sendMessageOfUserWhoSentMostResponses(dm, sender, usersWhoSentMostResponses);
 				await this.sendListOfStudentButtons(dm, sender, students);

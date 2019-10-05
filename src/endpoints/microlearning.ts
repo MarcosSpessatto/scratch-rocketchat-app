@@ -24,7 +24,7 @@ export class MicroLearningEndpoint extends ApiEndpoint {
 				new MessageHelper(modify),
 				new StorageHelper(persistence, read.getPersistenceReader()),
 				new Analytics(http),
-			).run();
+			).run('endpoint');
 		} catch (error) {
 			console.log(error);
 		}

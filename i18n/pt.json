@@ -3,6 +3,8 @@
     "bot_core_service_url_description": "Url do serviço para processamento da linguagem natural",
     "how_many_attempts_until_redirect_to_human_label": "Tentativas até mandar para mensagem para um humano",
     "how_many_attempts_until_redirect_to_human_description": "Quantidade de vezes que o Bot tentará responder uma pergunta mesmo não entendendo",
+    "scratch_params": "ajuda, enviar-conteudo, listar-alunos",
+    "scratch_description": "Interaja com o Scratch Bot",
     "try_to_redirect_first_to_user_label": "Tentar redicionar primeiramente para algum usuário",
     "try_to_redirect_first_to_user_description": "Tentar redirecionar a conversa quando necessário primeiramente para um usuário tutor ou professor online"
 }

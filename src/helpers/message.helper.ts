@@ -17,4 +17,13 @@ export class MessageHelper {
 		}
 		return await this.modify.getCreator().finish(msg);
 	}
+
+	public async notifyUser(room: IRoom, sender: IUser, receiver: IUser, message: string): Promise<void> {
+		const msg = this.modify.getCreator().startMessage()
+			.setSender(sender)
+			.setText(message)
+			.setRoom(room)
+			.getMessage();
+		return await this.modify.getNotifier().notifyUser(receiver, msg);
+	}
 }
