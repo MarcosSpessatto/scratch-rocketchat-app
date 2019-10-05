@@ -47,7 +47,7 @@ export class NotifyTeachersHandler {
 
 	private async saveListenStatus(user: IUser): Promise<void> {
 		const upsert = true;
-		await this.storageHelper.updateItem(user.id, { listeningFor: 'username' } as IListen, RocketChatAssociationModel.USER, upsert);
+		await this.storageHelper.updateItem(`group-${user.id}`, { listeningFor: 'username' } as IListen, RocketChatAssociationModel.MISC, upsert);
 	}
 
 	private async sendListOfStudentButtons(room: IRoom, sender: IUser, students: Array<IUser>): Promise<string> {

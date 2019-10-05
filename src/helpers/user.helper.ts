@@ -11,4 +11,8 @@ export class UserHelper {
 	public async getUserByUsername(username: string): Promise<IUser> {
 		return await this.read.getUserReader().getByUsername(username);
 	}
+
+	public async getUserById(userId: string): Promise<IUser> {
+		return await this.read.getUserReader().getById(userId);
+	}
 }

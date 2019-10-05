@@ -26,7 +26,7 @@ export class MicrolearningHandler {
 
 	public async run(message: IMessage): Promise<void> {
 		const userToSendMessageAsBot = await this.userHelper.getUserByUsername('rocket.cat');
-		const listenStorage = await this.storageHelper.getItem(message.sender.id, RocketChatAssociationModel.USER);
+		const listenStorage = await this.storageHelper.getItem(`group-${message.sender.id}`, RocketChatAssociationModel.MISC);
 		const listenStorageExists = listenStorage && listenStorage.length && listenStorage[0];
 		if (!listenStorageExists) {
 			return;
@@ -38,7 +38,32 @@ export class MicrolearningHandler {
 			return await this.handleMessageWhenItsListeningForUsername(message, userToSendMessageAsBot);
 		}
 		if (isListeningForContent) {
+			await this.handleMessageWhenItsListeningForContent(message);
+		}
+	}
 
+	private async handleMessageWhenItsListeningForContent(message: IMessage): Promise<void> {
+		const listenStorage = await this.storageHelper.getItem(`group-${message.sender.id}`);
+		if (listenStorage && listenStorage[0]) {
+			const record: IListen = {
+				listeningFor: listenStorage[0].listeningFor,
+				student: listenStorage[0].student,
+				content: listenStorage[0].content,
+			};
+			const newContent: any = {};
+			newContent.text = message.text;
+			if (message.attachments && message.attachments.length) {
+				newContent.attachments = message.attachments;
+			}
+			if (message.file) {
+				newContent.file = message.file;
+			}
+			if (listenStorage[0].content) {
+				record.content = record.content && record.content.concat(newContent);
+			} else {
+				record.content = [newContent];
+			}
+			await this.storageHelper.updateItem(`group-${message.sender.id}`, record, RocketChatAssociationModel.MISC);
 		}
 	}
 
@@ -64,13 +89,13 @@ export class MicrolearningHandler {
 
 	private async saveListenForContentStatus(user: IUser, student: IUser): Promise<void> {
 		const upsert = true;
-		await this.storageHelper.updateItem(user.id, { listeningFor: 'content', student: student.id } as IListen, RocketChatAssociationModel.USER, upsert);
+		await this.storageHelper.updateItem(`group-${user.id}`, { listeningFor: 'content', student: student.id } as IListen, RocketChatAssociationModel.MISC, upsert);
 	}
 
 	private async sendInstructions(room: IRoom, sender: IUser): Promise<void> {
 		await this.messageHelper.sendMessage(room, sender, `Para enviar o conteúdo, basta responder essa mensagem com o conteúdo.
 		O conteúdo pode ser dividido em mais de uma mensagem, você pode enviar áudio, arquivos, links, vídeos ou texto.
-		Quando desejar enviar o conteúdo, basta digitar o comando: */scratch enviar*\n
+		Quando desejar enviar o conteúdo, basta digitar o comando: */scratch enviar-conteudo*\n
 		:chart_with_upwards_trend: *Abaixo são apresentadas algumas métricas individuais para tentar ajudar a decidir o conteúdo ideal* :chart_with_upwards_trend:`);
 	}
 

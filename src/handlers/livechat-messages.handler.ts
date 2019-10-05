@@ -40,7 +40,7 @@ export class LivechatMessageHandler {
 			await this.replyWithAllNluMessages(roomThatGenerateTheMessage, userToSendMessagesAsABot, nluServiceResponses);
 			return await this.resetAttemptsToTryToRecognize(userWhoSentTheMessage.id);
 		}
-		const attempts = await this.storageHelper.getItem(userWhoSentTheMessage.id);
+		const attempts = await this.storageHelper.getItem(`bot-${userWhoSentTheMessage.id}`);
 		const needsRedirectMessageToHuman = Boolean(attempts.length && attempts[0].attempts >= howManyAttempsUntilRedirectToHuman);
 		if (needsRedirectMessageToHuman) {
 			await this.sendMessageToNotifyUserOfRedirection(roomThatGenerateTheMessage, userToSendMessagesAsABot);
@@ -68,7 +68,7 @@ export class LivechatMessageHandler {
 	}
 
 	private async resetAttemptsToTryToRecognize(userId: string): Promise<void> {
-		await this.storageHelper.removeItem(userId);
+		await this.storageHelper.removeItem(`bot-${userId}`);
 	}
 
 	private async notifyUserAboutTheLastAttemptToTryToRecognize(room: IRoom, user: IUser): Promise<string> {
@@ -126,9 +126,9 @@ export class LivechatMessageHandler {
 	private async incrementFallbackMessage(user: IUser, attempts: number): Promise<void> {
 		if (attempts) {
 			attempts += 1;
-			return await this.storageHelper.updateItem(user.id, { id: user.id, attempts });
+			return await this.storageHelper.updateItem(`bot-${user.id}`, { id: user.id, attempts });
 		}
-		await this.storageHelper.setItem(user.id, { attempts: 1 });
+		await this.storageHelper.setItem(`bot-${user.id}`, { attempts: 1 });
 	}
 
 	private async replyWithAllNluMessages(room: IRoom, sender: IUser, messages: Array<any>): Promise<void> {

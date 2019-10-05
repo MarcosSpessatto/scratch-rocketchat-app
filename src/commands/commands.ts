@@ -7,6 +7,7 @@ import { RoomHelper } from '../helpers/room.helper';
 import { StorageHelper } from '../helpers/storage.helper';
 import { UserHelper } from './../helpers/user.helper';
 import { HelpCommand } from './help';
+import { SendContentCommand } from './send-content';
 
 export class Commands implements ISlashCommand {
 	public command = 'scratch';
@@ -32,12 +33,17 @@ export class Commands implements ISlashCommand {
 			new StorageHelper(persistence, read.getPersistenceReader()),
 			new Analytics(http),
 		);
+		const sendContentCommand = new SendContentCommand(
+			messageHelper,
+			userHelper,
+			new StorageHelper(persistence, read.getPersistenceReader()),
+			new RoomHelper(read, modify));
 		const [command, ...params] = context.getArguments();
 		if (!command) {
 			return await helpCommand.run(context);
 		}
 		const commands = {
-			'enviar-conteudo': '',
+			'enviar-conteudo': () => sendContentCommand.run(context),
 			'listar-alunos': () => listStudentCommand.run('commands'),
 			'ajuda': () => helpCommand.run(context),
 		};
