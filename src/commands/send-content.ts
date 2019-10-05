@@ -19,8 +19,8 @@ export class SendContentCommand {
 
 	public async run(context: SlashCommandContext): Promise<void> {
 		const contentStorage = await this.storageHelper.getItem(`group-${context.getSender().id}`);
+		const sender = await this.userHelper.getUserByUsername('rocket.cat');
 		if (contentStorage && contentStorage[0] && contentStorage[0].content) {
-			const sender = await this.userHelper.getUserByUsername('rocket.cat');
 			const receiver = await this.userHelper.getUserById(contentStorage[0].student);
 			const dm = await this.roomHelper.getRoomById(await this.roomHelper.createDMRoom(sender, receiver));
 			await this.messageHelper.sendMessage(dm, sender, ':books: *Desculpe incomodar, esse é um conteúdo enviado por seu professor para ajudar nos seus estudos* :books:');
@@ -29,6 +29,8 @@ export class SendContentCommand {
 			}
 			await this.messageHelper.sendMessage(context.getRoom(), sender, 'Conteúdo enviado com sucesso. :rocket: :rocket:');
 			await this.storageHelper.removeItem(`group-${context.getSender().id}`);
+		} else {
+			await this.messageHelper.sendMessage(context.getRoom(), sender, 'Você não pode enviar um conteúdo vazio :upside_down:');
 		}
 	}
 }

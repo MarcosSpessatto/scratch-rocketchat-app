@@ -38,13 +38,13 @@ export class Commands implements ISlashCommand {
 			userHelper,
 			new StorageHelper(persistence, read.getPersistenceReader()),
 			new RoomHelper(read, modify));
-		const [command, ...params] = context.getArguments();
+		const [command] = context.getArguments();
 		if (!command) {
 			return await helpCommand.run(context);
 		}
 		const commands = {
 			'enviar-conteudo': () => sendContentCommand.run(context),
-			'listar-alunos': () => listStudentCommand.run('commands'),
+			'listar-alunos': () => listStudentCommand.run(context),
 			'ajuda': () => helpCommand.run(context),
 		};
 		return await commands[command]();

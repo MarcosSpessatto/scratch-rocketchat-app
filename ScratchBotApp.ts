@@ -1,7 +1,7 @@
+import { UpdatedMessagesHandler } from './src/handlers/updated-messages.handler';
 import {
 	IAppAccessors,
 	IConfigurationExtend,
-	IConfigurationModify,
 	IEnvironmentRead,
 	IHttp,
 	ILogger,
@@ -11,13 +11,14 @@ import {
 } from '@rocket.chat/apps-engine/definition/accessors';
 import { ApiSecurity, ApiVisibility } from '@rocket.chat/apps-engine/definition/api';
 import { App } from '@rocket.chat/apps-engine/definition/App';
-import { IMessage, IPostMessageSent } from '@rocket.chat/apps-engine/definition/messages';
+import { IMessage, IPostMessageDeleted, IPostMessageSent, IPostMessageUpdated, IPreMessageUpdatedPrevent } from '@rocket.chat/apps-engine/definition/messages';
 import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
 import { Analytics } from './src/analytics/analytics';
 import { Commands } from './src/commands/commands';
 import { CronJobSetup } from './src/config/cron-job-setup';
 import { AppSetting, settings } from './src/config/settings';
 import { MicroLearningEndpoint } from './src/endpoints/microlearning';
+import { DeletedMessagesHandler } from './src/handlers/deleted-messages.handler';
 import { LivechatMessageHandler } from './src/handlers/livechat-messages.handler';
 import { MicrolearningHandler } from './src/handlers/microlearning.handler';
 import { MessageHelper } from './src/helpers/message.helper';
@@ -27,7 +28,7 @@ import { StorageHelper } from './src/helpers/storage.helper';
 import { UserHelper } from './src/helpers/user.helper';
 import { NluSdk } from './src/nlu-sdk/nlu-sdk';
 
-export class ScratchBotApp extends App implements IPostMessageSent {
+export class ScratchBotApp extends App implements IPostMessageSent, IPostMessageDeleted, IPreMessageUpdatedPrevent {
 	private cronJobSetup: CronJobSetup;
 
 	constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
@@ -51,7 +52,6 @@ export class ScratchBotApp extends App implements IPostMessageSent {
 				}
 				return new MicrolearningHandler(
 					new UserHelper(read),
-					new RoomHelper(read, modify),
 					new MessageHelper(modify),
 					new StorageHelper(persistence, read.getPersistenceReader()),
 					new Analytics(http),
@@ -60,6 +60,15 @@ export class ScratchBotApp extends App implements IPostMessageSent {
 		} catch (error) {
 			console.log(error);
 		}
+	}
+
+	public async executePostMessageDeleted(message: IMessage, read: IRead, http: IHttp, persistence: IPersistence, modify: IModify): Promise<void> {
+		return new DeletedMessagesHandler(new StorageHelper(persistence, read.getPersistenceReader())).run(message);
+	}
+
+	public async executePreMessageUpdatedPrevent(message: IMessage, read: IRead, http: IHttp, persistence: IPersistence): Promise<boolean> {
+		await new UpdatedMessagesHandler(new StorageHelper(persistence, read.getPersistenceReader())).run(message);
+		return false;
 	}
 
 	protected async extendConfiguration(configuration: IConfigurationExtend, environmentRead: IEnvironmentRead): Promise<void> {

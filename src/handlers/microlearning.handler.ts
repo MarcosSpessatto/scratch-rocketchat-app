@@ -3,7 +3,6 @@ import { RocketChatAssociationModel } from '@rocket.chat/apps-engine/definition/
 import { IRoom } from '@rocket.chat/apps-engine/definition/rooms';
 import { IUser } from '@rocket.chat/apps-engine/definition/users';
 import { IListen } from '../helpers/listen.interface';
-import { RoomHelper } from '../helpers/room.helper';
 import { StorageHelper } from '../helpers/storage.helper';
 import { IAnalytics, IFrequentlyAskedQuestions, IFrequentWords } from './../analytics/analytics.interface';
 import { MessageHelper } from './../helpers/message.helper';
@@ -11,14 +10,12 @@ import { UserHelper } from './../helpers/user.helper';
 
 export class MicrolearningHandler {
 	private userHelper: UserHelper;
-	private roomHelper: RoomHelper;
 	private messageHelper: MessageHelper;
 	private storageHelper: StorageHelper;
 	private analytics: IAnalytics;
 
-	constructor(userHelper: UserHelper, roomHelper: RoomHelper, messageHelper: MessageHelper, storageHelper: StorageHelper, analytics: IAnalytics) {
+	constructor(userHelper: UserHelper, messageHelper: MessageHelper, storageHelper: StorageHelper, analytics: IAnalytics) {
 		this.userHelper = userHelper;
-		this.roomHelper = roomHelper;
 		this.messageHelper = messageHelper;
 		this.storageHelper = storageHelper;
 		this.analytics = analytics;
@@ -51,6 +48,7 @@ export class MicrolearningHandler {
 				content: listenStorage[0].content,
 			};
 			const newContent: any = {};
+			newContent.id = message.id;
 			newContent.text = message.text;
 			if (message.attachments && message.attachments.length) {
 				newContent.attachments = message.attachments;

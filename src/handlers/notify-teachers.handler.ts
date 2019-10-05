@@ -1,6 +1,7 @@
 import { IMessageAction, MessageActionButtonsAlignment, MessageActionType } from '@rocket.chat/apps-engine/definition/messages';
 import { RocketChatAssociationModel } from '@rocket.chat/apps-engine/definition/metadata';
 import { IRoom } from '@rocket.chat/apps-engine/definition/rooms';
+import { SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
 import { IUser } from '@rocket.chat/apps-engine/definition/users';
 import { IAnalytics, IUserWhoAsked, IUserWhoRespond } from '../analytics/analytics.interface';
 import { IListen } from '../helpers/listen.interface';
@@ -24,23 +25,27 @@ export class NotifyTeachersHandler {
 		this.analytics = analytics;
 	}
 
-	public async run(context: string): Promise<void> {
-		const usersToSendListOfStudents = (await this.roomHelper.getRoomMembersByRoomName('scratch')).filter(this.needToSendListOfStudents);
+	public async run(context?: SlashCommandContext): Promise<void> {
+		const usersToSendListOfStudents = context ? [context.getSender()] : (await this.roomHelper.getRoomMembersByRoomName('scratch')).filter(this.needToSendListOfStudents);
 		const students = (await this.roomHelper.getRoomMembersByRoomName('scratch')).filter(this.isStudent);
 		const usersWhoAskedMost = await this.analytics.findUsersWhoAskedMost();
 		const usersWhoSentMostResponses = await this.analytics.findUsersWhoSentMostResponses();
 		if (usersToSendListOfStudents.length && students.length) {
 			const sender = await this.userHelper.getUserByUsername('rocket.cat');
 			for (const userToSend of usersToSendListOfStudents) {
-				const receiver = await this.userHelper.getUserByUsername(userToSend.username);
-				const dm = (await this.roomHelper.getRoomById(await this.roomHelper.createDMRoom(sender, receiver)));
-				if (context === 'endpoint') {
-					await this.sendMicrolearningHourMessage(dm, sender);
+				const contentStorage = await this.storageHelper.getItem(`group-${userToSend.id}`);
+				const userIsAlreadyMakeContent = contentStorage && contentStorage[0] && contentStorage[0].listeningFor === 'content';
+				if (context || !userIsAlreadyMakeContent) {
+					const receiver = await this.userHelper.getUserByUsername(userToSend.username);
+					const dm = (await this.roomHelper.getRoomById(await this.roomHelper.createDMRoom(sender, receiver)));
+					if (!context) {
+						await this.sendMicrolearningHourMessage(dm, sender);
+					}
+					await this.sendMessageOfUserWhoAskedMost(dm, sender, usersWhoAskedMost);
+					await this.sendMessageOfUserWhoSentMostResponses(dm, sender, usersWhoSentMostResponses);
+					await this.sendListOfStudentButtons(dm, sender, students);
+					await this.saveListenStatus(userToSend);
 				}
-				await this.sendMessageOfUserWhoAskedMost(dm, sender, usersWhoAskedMost);
-				await this.sendMessageOfUserWhoSentMostResponses(dm, sender, usersWhoSentMostResponses);
-				await this.sendListOfStudentButtons(dm, sender, students);
-				await this.saveListenStatus(userToSend);
 			}
 		}
 	}
