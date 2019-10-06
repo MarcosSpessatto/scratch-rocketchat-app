@@ -1,12 +1,16 @@
 import { IHttp } from '@rocket.chat/apps-engine/definition/accessors';
 import { IUser } from '@rocket.chat/apps-engine/definition/users';
+import { SettingsHelper } from '../helpers/settings.helper';
+import { AppSetting } from './../config/settings';
 import { IAnalytics, IFrequentlyAskedQuestions, IFrequentWords, IUserWhoAsked, IUserWhoRespond } from './analytics.interface';
 
 export class Analytics implements IAnalytics {
 	private http: IHttp;
+	private settingsHelper: SettingsHelper;
 
-	constructor(http: IHttp) {
+	constructor(http: IHttp, settingsHelper: SettingsHelper) {
 		this.http = http;
+		this.settingsHelper = settingsHelper;
 	}
 
 	public async findFrequentlyAskedQuestionsByUser(user: IUser): Promise<Array<IFrequentlyAskedQuestions>> {
@@ -16,7 +20,7 @@ export class Analytics implements IAnalytics {
 					must: [
 						{
 							match: {
-								user_id: 'marcos.defendi',
+								user_id: user.username,
 							},
 						},
 						{
@@ -44,7 +48,7 @@ export class Analytics implements IAnalytics {
 				},
 			},
 		};
-		const response = await this.http.post('http://192.168.0.11:9200/messages/_search', {
+		const response = await this.http.post(`${await this.getAnalyticsBaseUrl()}/_search`, {
 			data: query,
 		});
 		if (response.data) {
@@ -63,7 +67,7 @@ export class Analytics implements IAnalytics {
 					must: [
 						{
 							match: {
-								user_id: 'marcos.defendi',
+								user_id: user.username,
 							},
 						},
 						{
@@ -81,7 +85,7 @@ export class Analytics implements IAnalytics {
 				},
 			},
 		};
-		const response = await this.http.post('http://192.168.0.11:9200/messages/_search', {
+		const response = await this.http.post(`${await this.getAnalyticsBaseUrl()}/_search`, {
 			data: query,
 		});
 		if (response.data) {
@@ -100,7 +104,7 @@ export class Analytics implements IAnalytics {
 					must: [
 						{
 							match: {
-								user_id: 'marcos.defendi',
+								user_id: user.username,
 							},
 						},
 						{
@@ -121,7 +125,7 @@ export class Analytics implements IAnalytics {
 				group_messages: { value_count: { field: 'message_origin' } },
 			},
 		};
-		const response = await this.http.post('http://192.168.0.11:9200/messages/_search', {
+		const response = await this.http.post(`${await this.getAnalyticsBaseUrl()}/_search`, {
 			data: query,
 		});
 		if (response.data) {
@@ -137,7 +141,7 @@ export class Analytics implements IAnalytics {
 					must: [
 						{
 							match: {
-								user_id: 'marcos.defendi',
+								user_id: user.username,
 							},
 						},
 						{
@@ -163,7 +167,7 @@ export class Analytics implements IAnalytics {
 				questions: { value_count: { field: 'is_question' } },
 			},
 		};
-		const response = await this.http.post('http://192.168.0.11:9200/messages/_search', {
+		const response = await this.http.post(`${await this.getAnalyticsBaseUrl()}/_search`, {
 			data: query,
 		});
 		if (response.data) {
@@ -179,7 +183,7 @@ export class Analytics implements IAnalytics {
 					must: [
 						{
 							match: {
-								user_id: 'marcos.defendi',
+								user_id: user.username,
 							},
 						},
 						{
@@ -200,7 +204,7 @@ export class Analytics implements IAnalytics {
 				questions: { value_count: { field: 'is_question' } },
 			},
 		};
-		const response = await this.http.post('http://192.168.0.11:9200/messages/_search', {
+		const response = await this.http.post(`${await this.getAnalyticsBaseUrl()}/_search`, {
 			data: query,
 		});
 		if (response.data) {
@@ -216,7 +220,7 @@ export class Analytics implements IAnalytics {
 					must: [
 						{
 							match: {
-								user_id: 'marcos.defendi',
+								user_id: user.username,
 							},
 						},
 						{
@@ -237,7 +241,7 @@ export class Analytics implements IAnalytics {
 				responses: { value_count: { field: 'is_question' } },
 			},
 		};
-		const response = await this.http.post('http://192.168.0.11:9200/messages/_search', {
+		const response = await this.http.post(`${await this.getAnalyticsBaseUrl()}/_search`, {
 			data: query,
 		});
 		if (response.data) {
@@ -253,7 +257,7 @@ export class Analytics implements IAnalytics {
 					must: [
 						{
 							match: {
-								user_id: 'marcos.defendi',
+								user_id: user.username,
 							},
 						},
 						{
@@ -279,7 +283,7 @@ export class Analytics implements IAnalytics {
 				questions: { value_count: { field: 'is_question' } },
 			},
 		};
-		const response = await this.http.post('http://192.168.0.11:9200/messages/_search', {
+		const response = await this.http.post(`${await this.getAnalyticsBaseUrl()}/_search`, {
 			data: query,
 		});
 		if (response.data) {
@@ -315,12 +319,12 @@ export class Analytics implements IAnalytics {
 				},
 			},
 		};
-		const response = await this.http.post('http://192.168.0.11:9200/messages/_search', {
+		const response = await this.http.post(`${await this.getAnalyticsBaseUrl()}/_search`, {
 			data: query,
 		});
 		if (response.data) {
 			return response.data.aggregations.users.buckets.map((user) => ({
-				userId: user.key,
+				username: user.key,
 				occurrences: user.doc_count,
 			} as IUserWhoAsked));
 		}
@@ -354,15 +358,19 @@ export class Analytics implements IAnalytics {
 				},
 			},
 		};
-		const response = await this.http.post('http://192.168.0.11:9200/messages/_search', {
+		const response = await this.http.post(`${await this.getAnalyticsBaseUrl()}/_search`, {
 			data: query,
 		});
 		if (response.data) {
 			return response.data.aggregations.users.buckets.map((user) => ({
-				userId: user.key,
+				username: user.key,
 				occurrences: user.doc_count,
 			} as IUserWhoRespond));
 		}
 		return [];
+	}
+
+	private async getAnalyticsBaseUrl(): Promise<string> {
+		return (await this.settingsHelper.getAppSettingById(AppSetting.analyticsServiceUrl)).value;
 	}
 }

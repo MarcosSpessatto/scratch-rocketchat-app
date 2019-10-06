@@ -1,9 +1,11 @@
+import { AppSetting } from './../config/settings';
 import { IHttp, IModify, IPersistence, IRead } from '@rocket.chat/apps-engine/definition/accessors';
 import { ISlashCommand, SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
 import { Analytics } from '../analytics/analytics';
 import { NotifyTeachersHandler } from '../handlers/notify-teachers.handler';
 import { MessageHelper } from '../helpers/message.helper';
 import { RoomHelper } from '../helpers/room.helper';
+import { SettingsHelper } from '../helpers/settings.helper';
 import { StorageHelper } from '../helpers/storage.helper';
 import { UserHelper } from './../helpers/user.helper';
 import { HelpCommand } from './help';
@@ -18,10 +20,11 @@ export class Commands implements ISlashCommand {
 	public async executor(context: SlashCommandContext, read: IRead, modify: IModify, http: IHttp, persistence: IPersistence): Promise<void> {
 		const messageHelper = new MessageHelper(modify);
 		const userHelper = new UserHelper(read);
+		const settingsHelper = new SettingsHelper(read);
 		const userToSendMessageAsBot = await userHelper.getUserByUsername('rocket.cat');
 		const sender = context.getSender();
 		const room = context.getRoom();
-		const userIsAllowed = sender.roles.includes('teacher');
+		const userIsAllowed = sender.roles.includes('teacher') || (sender.roles.includes('tutor') && (await settingsHelper.getAppSettingById(AppSetting.sendMicrolearningToTutor)).value === true);
 		if (!userIsAllowed) {
 			return await messageHelper.notifyUser(room, userToSendMessageAsBot, sender, 'Você não pode executar este comando.');
 		}
@@ -31,7 +34,8 @@ export class Commands implements ISlashCommand {
 			new RoomHelper(read, modify),
 			new MessageHelper(modify),
 			new StorageHelper(persistence, read.getPersistenceReader()),
-			new Analytics(http),
+			new Analytics(http, settingsHelper),
+			settingsHelper,
 		);
 		const sendContentCommand = new SendContentCommand(
 			messageHelper,

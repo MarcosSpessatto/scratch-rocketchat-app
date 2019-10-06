@@ -40,13 +40,14 @@ export class LivechatMessageHandler {
 			await this.replyWithAllNluMessages(roomThatGenerateTheMessage, userToSendMessagesAsABot, nluServiceResponses);
 			return await this.resetAttemptsToTryToRecognize(userWhoSentTheMessage.id);
 		}
+		await this.sendMessageToProcess(message);
 		const attempts = await this.storageHelper.getItem(`bot-${userWhoSentTheMessage.id}`);
 		const needsRedirectMessageToHuman = Boolean(attempts.length && attempts[0].attempts >= howManyAttempsUntilRedirectToHuman);
 		if (needsRedirectMessageToHuman) {
 			await this.sendMessageToNotifyUserOfRedirection(roomThatGenerateTheMessage, userToSendMessagesAsABot);
 			const roomToSendAskForHelp = await this.roomHelper.getRoomByRoomName('scratch');
 			const classMembers = await this.roomHelper.getRoomMembersByRoomName('scratch');
-			const userAbleToHelp = await this.findUserAbleToHelp(classMembers);
+			const userAbleToHelp = await this.findUserAbleToHelp(classMembers, userWhoSentTheMessage);
 			await this.resetAttemptsToTryToRecognize(userWhoSentTheMessage.id);
 			if (tryToRedirectFirstToUser && userAbleToHelp) {
 				const messageSendToDM = await this.sendMessageDirectlyToUserAbleToHelp(userAbleToHelp, userWhoSentTheMessage, message.text as string);
@@ -65,6 +66,10 @@ export class LivechatMessageHandler {
 			await this.sendFallbackMessage(roomThatGenerateTheMessage, userToSendMessagesAsABot);
 		}
 		await this.incrementFallbackMessage(userWhoSentTheMessage, attempts[0] && attempts[0].attempts);
+	}
+
+	private async sendMessageToProcess(message: IMessage): Promise<void> {
+		await this.nluSdk.sendMessageToProcessAndStoreOnTracker(message.text as string, message.sender.username);
 	}
 
 	private async resetAttemptsToTryToRecognize(userId: string): Promise<void> {
@@ -117,8 +122,8 @@ export class LivechatMessageHandler {
 		return await this.messageHelper.sendMessage(room, user, messageToSend);
 	}
 
-	private async findUserAbleToHelp(roomMembers: Array<IUser>): Promise<IUser> {
-		const usersAbleToHelp = roomMembers.filter((member) => (member.roles.includes('teacher') || member.roles.includes('tutor')) && member.status !== 'offline');
+	private async findUserAbleToHelp(roomMembers: Array<IUser>, userWhoSentTheMessage: IUser): Promise<IUser> {
+		const usersAbleToHelp = roomMembers.filter((member) => (member.roles.includes('teacher') || member.roles.includes('tutor')) && member.status !== 'offline' && member.id !== userWhoSentTheMessage.id);
 		const position = Math.floor(Math.random() * (usersAbleToHelp.length - 1));
 		return usersAbleToHelp[position];
 	}

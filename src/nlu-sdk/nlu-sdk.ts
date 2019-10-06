@@ -33,4 +33,17 @@ export class NluSdk {
 		}
 		return result.data;
 	}
+
+	public async sendMessageToProcessAndStoreOnTracker(message: string, username: string): Promise<any> {
+		const result = await this.http.post(`${this.url}/conversations/${username}/messages`, {
+			data: {
+				text: message,
+				sender: 'user',
+			},
+		});
+		if (!result) {
+			return;
+		}
+		return result.data;
+	}
 }

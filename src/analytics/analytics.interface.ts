@@ -23,11 +23,11 @@ export interface IFrequentWords {
 }
 
 export interface IUserWhoAsked {
-	userId: string;
+	username: string;
 	occurrences: number;
 }
 
 export interface IUserWhoRespond {
-	userId: string;
+	username: string;
 	occurrences: number;
 }

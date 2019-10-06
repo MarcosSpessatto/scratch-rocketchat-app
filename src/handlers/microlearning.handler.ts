@@ -4,6 +4,7 @@ import { IRoom } from '@rocket.chat/apps-engine/definition/rooms';
 import { IUser } from '@rocket.chat/apps-engine/definition/users';
 import { IListen } from '../helpers/listen.interface';
 import { StorageHelper } from '../helpers/storage.helper';
+import { NluSdk } from '../nlu-sdk/nlu-sdk';
 import { IAnalytics, IFrequentlyAskedQuestions, IFrequentWords } from './../analytics/analytics.interface';
 import { MessageHelper } from './../helpers/message.helper';
 import { UserHelper } from './../helpers/user.helper';
@@ -78,8 +79,12 @@ export class MicrolearningHandler {
 		const quantityOfSentResponses = await this.analytics.findQuantityOfSentResponsesByUser(student);
 		const quantityOfMessagesSentInGroup = await this.analytics.findQuantityOfSentMessagesInGroupByUser(student);
 		await this.sendInstructions(message.room, userToSendMessageAsBot);
-		await this.sendFrequentQuestionsMetrics(message.room, userToSendMessageAsBot, student, frequentlyQuestions);
-		await this.sendFrequentWordsMetrics(message.room, userToSendMessageAsBot, student, frequentWords);
+		if (frequentlyQuestions && frequentlyQuestions.length) {
+			await this.sendFrequentQuestionsMetrics(message.room, userToSendMessageAsBot, student, frequentlyQuestions);
+		}
+		if (frequentWords && frequentWords.length) {
+			await this.sendFrequentWordsMetrics(message.room, userToSendMessageAsBot, student, frequentWords);
+		}
 		await this.sendQuantityOfQuestionsMetrics(message.room, userToSendMessageAsBot, student, quantityOfQuestions, quantityOfQuestionsSentInGroup, quantityOfQuestionsToBot);
 		await this.sendQuantityOfMessagesSentInGroupMetrics(message.room, userToSendMessageAsBot, student, quantityOfMessagesSentInGroup, quantityOfSentResponses);
 		await this.saveListenForContentStatus(message.sender, student);
@@ -112,10 +117,10 @@ export class MicrolearningHandler {
 
 	private async sendFrequentQuestionsMetrics(room: IRoom, sender: IUser, student: IUser, frequentWords: Array<IFrequentlyAskedQuestions>): Promise<void> {
 		const formattedMessage = frequentWords.reduce((accumulator, word) => {
-			accumulator += `${word.question}: ${word.occurrences} vezes\n`;
+			accumulator += `${word.question}?: ${word.occurrences} vezes\n`;
 			return accumulator;
 		}, '');
-		await this.messageHelper.sendMessage(room, sender, `:question: *Essas foram as questões que ${student.name || student.username} mais fez* :question:\n \`\`\`${formattedMessage}\`\`\``)
+		await this.messageHelper.sendMessage(room, sender, `:question: *Essas foram as questões que ${student.name || student.username} mais fez* :question:\n \`\`\`${formattedMessage}\`\`\``);
 	}
 
 	private async sendFrequentWordsMetrics(room: IRoom, sender: IUser, student: IUser, frequentWords: Array<IFrequentWords>): Promise<void> {
@@ -123,7 +128,7 @@ export class MicrolearningHandler {
 			accumulator += `${word.word}: ${word.occurrences} vezes\n`;
 			return accumulator;
 		}, '');
-		await this.messageHelper.sendMessage(room, sender, `:pencil: *Essa foram as palavras mais utilizadas por ${student.name || student.username}* :pencil: \n \`\`\`${formattedMessage}\`\`\``)
+		await this.messageHelper.sendMessage(room, sender, `:pencil: *Essa foram as palavras mais utilizadas por ${student.name || student.username}* :pencil: \n \`\`\`${formattedMessage}\`\`\``);
 	}
 
 	private async notifyUserDoesNotExists(room: IRoom, sender: IUser): Promise<void> {

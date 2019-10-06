@@ -1,10 +1,20 @@
 {
+    "analytics_service_url_label": "Url do serviço de Analytics",
+    "analytics_service_url_description": "",
     "bot_core_service_url_label": "Url do serviço para processamento da linguagem natural",
-    "bot_core_service_url_description": "Url do serviço para processamento da linguagem natural",
+    "bot_core_service_url_description": "",
+    "cron_job_service_url_label": "Url do serviço de Cron Jobs",
+    "cron_job_service_url_description": "",
+    "every_12_hours_label": "A cada 12 horas",
+    "every_day_12_hours_label": "Todos os dias às 12:00",
+    "every_wednesday_12_label": "Todas às quartas às 12:00",
+    "every_minute_label": "A cada minuto",
     "how_many_attempts_until_redirect_to_human_label": "Tentativas até mandar para mensagem para um humano",
     "how_many_attempts_until_redirect_to_human_description": "Quantidade de vezes que o Bot tentará responder uma pergunta mesmo não entendendo",
     "scratch_params": "ajuda, enviar-conteudo, listar-alunos",
     "scratch_description": "Interaja com o Scratch Bot",
+    "send_microlearning_to_tutor_label": "Permitir que tutores enviem microconteúdos?",
+    "send_microlearning_to_tutor_description": "",
     "try_to_redirect_first_to_user_label": "Tentar redicionar primeiramente para algum usuário",
-    "try_to_redirect_first_to_user_description": "Tentar redirecionar a conversa quando necessário primeiramente para um usuário tutor ou professor online"
+    "try_to_redirect_first_to_user_description": "Tentar redirecionar a conversa quando necessário, primeiramente para um tutor ou professor online antes de enviar ao grupo"
 }

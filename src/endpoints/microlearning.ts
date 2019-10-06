@@ -4,6 +4,7 @@ import { ScratchBotApp } from '../../ScratchBotApp';
 import { NotifyTeachersHandler } from '../handlers/notify-teachers.handler';
 import { MessageHelper } from '../helpers/message.helper';
 import { RoomHelper } from '../helpers/room.helper';
+import { SettingsHelper } from '../helpers/settings.helper';
 import { StorageHelper } from '../helpers/storage.helper';
 import { UserHelper } from '../helpers/user.helper';
 import { Analytics } from './../analytics/analytics';
@@ -23,7 +24,8 @@ export class MicroLearningEndpoint extends ApiEndpoint {
 				new RoomHelper(read, modify),
 				new MessageHelper(modify),
 				new StorageHelper(persistence, read.getPersistenceReader()),
-				new Analytics(http),
+				new Analytics(http, new SettingsHelper(read)),
+				new SettingsHelper(read),
 			).run();
 		} catch (error) {
 			console.log(error);
