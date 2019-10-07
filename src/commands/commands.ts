@@ -1,4 +1,3 @@
-import { AppSetting } from './../config/settings';
 import { IHttp, IModify, IPersistence, IRead } from '@rocket.chat/apps-engine/definition/accessors';
 import { ISlashCommand, SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
 import { Analytics } from '../analytics/analytics';
@@ -7,6 +6,7 @@ import { MessageHelper } from '../helpers/message.helper';
 import { RoomHelper } from '../helpers/room.helper';
 import { SettingsHelper } from '../helpers/settings.helper';
 import { StorageHelper } from '../helpers/storage.helper';
+import { AppSetting } from './../config/settings';
 import { UserHelper } from './../helpers/user.helper';
 import { HelpCommand } from './help';
 import { SendContentCommand } from './send-content';
