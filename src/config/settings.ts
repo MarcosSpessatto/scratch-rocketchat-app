@@ -93,7 +93,7 @@ export const settings: Array<ISetting> = [
 		}],
 		required: true,
 		public: true,
-		i18nLabel: 'cron_job_service_url_label',
-		i18nDescription: 'cron_job_service_url_description',
+		i18nLabel: 'cron_job_service_frequency_label',
+		i18nDescription: 'cron_job_service_frequency_description',
 	},
 ];

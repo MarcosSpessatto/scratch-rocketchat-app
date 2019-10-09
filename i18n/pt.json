@@ -5,6 +5,8 @@
     "bot_core_service_url_description": "",
     "cron_job_service_url_label": "Url do serviço de Cron Jobs",
     "cron_job_service_url_description": "",
+    "cron_job_service_frequency_label": "Frequência de envio dos conteúdos",
+    "cron_job_service_frequency_description": "",
     "every_12_hours_label": "A cada 12 horas",
     "every_day_12_hours_label": "Todos os dias às 12:00",
     "every_wednesday_12_label": "Todas às quartas às 12:00",
