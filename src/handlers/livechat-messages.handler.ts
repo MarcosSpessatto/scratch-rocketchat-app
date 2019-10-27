@@ -45,8 +45,8 @@ export class LivechatMessageHandler {
 		const needsRedirectMessageToHuman = Boolean(attempts.length && attempts[0].attempts >= howManyAttempsUntilRedirectToHuman);
 		if (needsRedirectMessageToHuman) {
 			await this.sendMessageToNotifyUserOfRedirection(roomThatGenerateTheMessage, userToSendMessagesAsABot);
-			const roomToSendAskForHelp = await this.roomHelper.getRoomByRoomName('scratch');
-			const classMembers = await this.roomHelper.getRoomMembersByRoomName('scratch');
+			const roomToSendAskForHelp = await this.getRoomToSendAskForHelp(message.sender);
+			const classMembers = await this.getClassMembers(message.sender);
 			const userAbleToHelp = await this.findUserAbleToHelp(classMembers, userWhoSentTheMessage);
 			await this.resetAttemptsToTryToRecognize(userWhoSentTheMessage.id);
 			if (tryToRedirectFirstToUser && userAbleToHelp) {
@@ -55,7 +55,7 @@ export class LivechatMessageHandler {
 				return await this.sendMessageToNotifyUserOfRedirectionToHuman(roomThatGenerateTheMessage, userToSendMessagesAsABot, messageDMLink, 'direct');
 			}
 			const messageSendToGroup = await this.sendMessageToClassRoomToAskForHelp(roomToSendAskForHelp, userToSendMessagesAsABot, userWhoSentTheMessage, message.text as string);
-			const messageGroupLink = await this.getLinkOfMessageToAskForHelp(messageSendToGroup, 'channel');
+			const messageGroupLink = await this.getLinkOfMessageToAskForHelp(messageSendToGroup, 'channel', '', roomToSendAskForHelp);
 			return await this.sendMessageToNotifyUserOfRedirectionToHuman(roomThatGenerateTheMessage, userToSendMessagesAsABot, messageGroupLink);
 		}
 		// tslint:disable-next-line: radix
@@ -66,6 +66,34 @@ export class LivechatMessageHandler {
 			await this.sendFallbackMessage(roomThatGenerateTheMessage, userToSendMessagesAsABot);
 		}
 		await this.incrementFallbackMessage(userWhoSentTheMessage, attempts[0] && attempts[0].attempts);
+	}
+
+	private async getClassMembers(user: IUser): Promise<Array<IUser>> {
+		const rooms = await this.storageHelper.getItem('scratch-rooms');
+		if (rooms && rooms[0] && Array.isArray(rooms[0].rooms)) {
+			for (const roomId of rooms[0].rooms) {
+				const members = await this.roomHelper.getRoomMembersByRoomId(roomId);
+				const isMemberOfRoom = members.find((member) => member.username === user.username);
+				if (isMemberOfRoom) {
+					return members;
+				}
+			}
+		}
+		return [];
+	}
+
+	private async getRoomToSendAskForHelp(user: IUser): Promise<IRoom> {
+		const rooms = await this.storageHelper.getItem('scratch-rooms');
+		if (rooms && rooms[0] && Array.isArray(rooms[0].rooms)) {
+			for (const roomId of rooms[0].rooms) {
+				const members = await this.roomHelper.getRoomMembersByRoomId(roomId);
+				const isMemberOfRoom = members.find((member) => member.username === user.username);
+				if (isMemberOfRoom) {
+					return await this.roomHelper.getRoomById(roomId);
+				}
+			}
+		}
+		return await this.roomHelper.getRoomByRoomName('scratch');
 	}
 
 	private async sendMessageToProcess(message: IMessage): Promise<void> {
@@ -109,12 +137,12 @@ export class LivechatMessageHandler {
 		return await this.messageHelper.sendMessage(room, user, messageTosend);
 	}
 
-	private async getLinkOfMessageToAskForHelp(messageId: string, messageType: string, username?: string): Promise<string> {
+	private async getLinkOfMessageToAskForHelp(messageId: string, messageType: string, username?: string, room?: IRoom): Promise<string> {
 		const siteUrl = (await this.settingsHelper.getServerSettingById('Site_Url')).value;
 		if (messageType === 'direct') {
 			return `${siteUrl}/direct/${username}?=${messageId}`;
 		}
-		return `${siteUrl}/channel/scratch?msg=${messageId}`;
+		return `${siteUrl}/channel/${room && room.slugifiedName}?msg=${messageId}`;
 	}
 
 	private async sendMessageToClassRoomToAskForHelp(room: IRoom, user: IUser, userWhoAskForHelp: IUser, originalAskForHelpMessage: string): Promise<string> {

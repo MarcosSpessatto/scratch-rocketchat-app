@@ -64,7 +64,8 @@ export class ScratchBotApp extends App implements IPostMessageSent, IPostMessage
 				if (message.room.type === 'c') {
 					return new ChannelHandler(
 						new NluSdk(http, nluServiceUrl),
-						new RoomHelper(read, modify))
+						new RoomHelper(read, modify),
+						new StorageHelper(persistence, read.getPersistenceReader()))
 						.run(message);
 				}
 			}
@@ -81,6 +82,7 @@ export class ScratchBotApp extends App implements IPostMessageSent, IPostMessage
 		await new UpdatedMessagesHandler(new StorageHelper(persistence, read.getPersistenceReader())).run(message);
 		return false;
 	}
+	
 	public async onSettingUpdated(setting: ISetting, configurationModify: IConfigurationModify, read: IRead, http: IHttp): Promise<void> {
 		try {
 			if (setting.id !== AppSetting.cronJobServiceUrl && setting.id !== AppSetting.cronJobServiceFrequency) {

@@ -30,11 +30,10 @@ export class NotifyTeachersHandler {
 	}
 
 	public async run(context?: SlashCommandContext): Promise<void> {
-		const sendMicrolearnigToTutor = (await this.settingsHelper.getAppSettingById(AppSetting.sendMicrolearningToTutor)).value;
 		const usersToSendListOfStudents = context
 			? [context.getSender()]
-			: (await this.roomHelper.getRoomMembersByRoomName('scratch')).filter((member) => this.needToSendListOfStudents(member, sendMicrolearnigToTutor));
-		const students = (await this.roomHelper.getRoomMembersByRoomName('scratch')).filter(this.isStudent);
+			: (await this.getUsersToSendListOfStudents());
+		const students = await this.getStudentToSendContent();
 		if (!usersToSendListOfStudents.length || !students.length) {
 			return;
 		}
@@ -57,13 +56,40 @@ export class NotifyTeachersHandler {
 				if (usersWhoAskedMost.length) {
 					await this.sendMessageOfUserWhoAskedMost(dm, sender, usersWhoAskedMost);
 				}
-				if (usersWhoSentMostResponses) {
+				if (usersWhoSentMostResponses.length) {
 					await this.sendMessageOfUserWhoSentMostResponses(dm, sender, usersWhoSentMostResponses);
 				}
 				await this.sendListOfStudentButtons(dm, sender, studentsToSend);
 				await this.saveListenStatus(userToSend);
 			}
 		}
+	}
+
+	private async getStudentToSendContent(): Promise<Array<IUser>> {
+		const rooms = await this.storageHelper.getItem('scratch-rooms');
+		let users: Array<IUser> = [];
+		if (rooms && rooms[0] && Array.isArray(rooms[0].rooms)) {
+			for (const roomId of rooms[0].rooms) {
+				const usersOfRoom = (await this.roomHelper.getRoomMembersByRoomId(roomId)).filter(this.isStudent);
+				users = users.concat(usersOfRoom.filter((userOfRoom) => !users.map((user) => user.id).includes(userOfRoom.id)));
+			}
+			return users;
+		}
+		return users;
+	}
+
+	private async getUsersToSendListOfStudents(): Promise<Array<IUser>> {
+		const sendMicrolearnigToTutor = (await this.settingsHelper.getAppSettingById(AppSetting.sendMicrolearningToTutor)).value;
+		const rooms = await this.storageHelper.getItem('scratch-rooms');
+		let users: Array<IUser> = [];
+		if (rooms && rooms[0] && Array.isArray(rooms[0].rooms)) {
+			for (const roomId of rooms[0].rooms) {
+				const usersOfRoom = (await this.roomHelper.getRoomMembersByRoomId(roomId)).filter((member) => this.needToSendListOfStudents(member, sendMicrolearnigToTutor));
+				users = users.concat(usersOfRoom.filter((userOfRoom) => !users.map((user) => user.id).includes(userOfRoom.id)));
+			}
+			return users;
+		}
+		return users;
 	}
 
 	private async saveListenStatus(user: IUser): Promise<void> {

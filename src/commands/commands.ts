@@ -8,6 +8,7 @@ import { SettingsHelper } from '../helpers/settings.helper';
 import { StorageHelper } from '../helpers/storage.helper';
 import { AppSetting } from './../config/settings';
 import { UserHelper } from './../helpers/user.helper';
+import { AddRoomCommand } from './add-room';
 import { HelpCommand } from './help';
 import { SendContentCommand } from './send-content';
 
@@ -24,7 +25,13 @@ export class Commands implements ISlashCommand {
 		const userToSendMessageAsBot = await userHelper.getUserByUsername('rocket.cat');
 		const sender = context.getSender();
 		const room = context.getRoom();
-		const userIsAllowed = sender.roles.includes('teacher') || (sender.roles.includes('tutor') && (await settingsHelper.getAppSettingById(AppSetting.sendMicrolearningToTutor)).value === true);
+		const botServiceUrl = (await settingsHelper.getAppSettingById(AppSetting.botCoreServiceUrl)).value;
+		const analyticsServiceUrl = (await settingsHelper.getAppSettingById(AppSetting.analyticsServiceUrl)).value;
+		if (!botServiceUrl || !analyticsServiceUrl) {
+			return await messageHelper.notifyUser(room, userToSendMessageAsBot, sender, 'Por favor verifique as configurações do Scratch Bot, pois alguma coisa está faltando. =)');
+		}
+		// tslint:disable-next-line: max-line-length
+		const userIsAllowed = sender.roles.includes('admin') || sender.roles.includes('teacher') || (sender.roles.includes('tutor') && (await settingsHelper.getAppSettingById(AppSetting.sendMicrolearningToTutor)).value === true);
 		if (!userIsAllowed) {
 			return await messageHelper.notifyUser(room, userToSendMessageAsBot, sender, 'Você não pode executar este comando.');
 		}
@@ -42,11 +49,18 @@ export class Commands implements ISlashCommand {
 			userHelper,
 			new StorageHelper(persistence, read.getPersistenceReader()),
 			new RoomHelper(read, modify));
+		const addRoomCommand = new AddRoomCommand(
+			new StorageHelper(persistence, read.getPersistenceReader()),
+			new MessageHelper(modify),
+			new UserHelper(read),
+			new RoomHelper(read, modify),
+		);
 		const [command] = context.getArguments();
 		if (!command) {
 			return await helpCommand.run(context);
 		}
 		const commands = {
+			'adicionar-sala': () => addRoomCommand.run(context),
 			'enviar-conteudo': () => sendContentCommand.run(context),
 			'listar-alunos': () => listStudentCommand.run(context),
 			'ajuda': () => helpCommand.run(context),

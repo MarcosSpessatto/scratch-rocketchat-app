@@ -1,3 +1,4 @@
+
 import { IRead } from '@rocket.chat/apps-engine/definition/accessors';
 import { ISetting } from '@rocket.chat/apps-engine/definition/settings';
 

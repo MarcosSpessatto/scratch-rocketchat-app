@@ -1,4 +1,4 @@
-import { IRead, IModify } from '@rocket.chat/apps-engine/definition/accessors';
+import { IModify, IRead } from '@rocket.chat/apps-engine/definition/accessors';
 import { IRoom, RoomType } from '@rocket.chat/apps-engine/definition/rooms';
 import { IUser } from '@rocket.chat/apps-engine/definition/users';
 
@@ -21,6 +21,16 @@ export class RoomHelper {
 
 	public async getRoomMembersByRoomName(roomName: string): Promise<Array<IUser>> {
 		return await this.read.getRoomReader().getMembers((await this.getRoomByRoomName(roomName)).id);
+	}
+
+	public async getRoomMembersByRoomId(roomId: string): Promise<Array<IUser>> {
+		return await this.read.getRoomReader().getMembers(roomId);
+	}
+
+	public async addMember(roomId: string, user: IUser): Promise<void> {
+		const updater = await this.read.getUserReader().getByUsername('admin');
+		const extender = (await this.modify.getExtender().extendRoom(roomId, updater)).addMember(user);
+		await this.modify.getExtender().finish(extender);
 	}
 
 	public async createDMRoom(sender: IUser, receiver: IUser): Promise<string> {

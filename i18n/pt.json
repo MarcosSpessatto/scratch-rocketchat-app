@@ -13,7 +13,7 @@
     "every_minute_label": "A cada minuto",
     "how_many_attempts_until_redirect_to_human_label": "Tentativas até mandar para mensagem para um humano",
     "how_many_attempts_until_redirect_to_human_description": "Quantidade de vezes que o Bot tentará responder uma pergunta mesmo não entendendo",
-    "scratch_params": "ajuda, enviar-conteudo, listar-alunos",
+    "scratch_params": "ajuda, enviar-conteudo, listar-alunos, adicionar-sala",
     "scratch_description": "Interaja com o Scratch Bot",
     "send_microlearning_to_tutor_label": "Permitir que tutores enviem microconteúdos?",
     "send_microlearning_to_tutor_description": "",
