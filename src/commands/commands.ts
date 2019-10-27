@@ -25,6 +25,7 @@ export class Commands implements ISlashCommand {
 		const userToSendMessageAsBot = await userHelper.getUserByUsername('rocket.cat');
 		const sender = context.getSender();
 		const room = context.getRoom();
+		const storageHelper = new StorageHelper(persistence, read.getPersistenceReader());
 		const botServiceUrl = (await settingsHelper.getAppSettingById(AppSetting.botCoreServiceUrl)).value;
 		const analyticsServiceUrl = (await settingsHelper.getAppSettingById(AppSetting.analyticsServiceUrl)).value;
 		if (!botServiceUrl || !analyticsServiceUrl) {
@@ -33,7 +34,7 @@ export class Commands implements ISlashCommand {
 		// tslint:disable-next-line: max-line-length
 		const userIsAllowed = sender.roles.includes('admin') || sender.roles.includes('teacher') || (sender.roles.includes('tutor') && (await settingsHelper.getAppSettingById(AppSetting.sendMicrolearningToTutor)).value === true);
 		if (!userIsAllowed) {
-			return await messageHelper.notifyUser(room, userToSendMessageAsBot, sender, 'Você não pode executar este comando.');
+			return await messageHelper.notifyUser(room, userToSendMessageAsBot, sender, 'Você não pode executar este comando nesta sala.');
 		}
 		const helpCommand = new HelpCommand(messageHelper, userHelper);
 		const listStudentCommand = new NotifyTeachersHandler(

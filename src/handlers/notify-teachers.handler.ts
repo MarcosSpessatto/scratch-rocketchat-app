@@ -33,7 +33,7 @@ export class NotifyTeachersHandler {
 		const usersToSendListOfStudents = context
 			? [context.getSender()]
 			: (await this.getUsersToSendListOfStudents());
-		const students = await this.getStudentToSendContent();
+		const students = await this.getStudentsToSendContent();
 		if (!usersToSendListOfStudents.length || !students.length) {
 			return;
 		}
@@ -65,7 +65,7 @@ export class NotifyTeachersHandler {
 		}
 	}
 
-	private async getStudentToSendContent(): Promise<Array<IUser>> {
+	private async getStudentsToSendContent(): Promise<Array<IUser>> {
 		const rooms = await this.storageHelper.getItem('scratch-rooms');
 		let users: Array<IUser> = [];
 		if (rooms && rooms[0] && Array.isArray(rooms[0].rooms)) {
