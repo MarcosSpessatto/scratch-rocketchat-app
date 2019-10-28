@@ -166,7 +166,7 @@ export class LivechatMessageHandler {
 
 	private async replyWithAllNluMessages(room: IRoom, sender: IUser, messages: Array<any>): Promise<void> {
 		for (const message of messages) {
-			this.messageHelper.sendMessage(room, sender, message.text);
+			await this.messageHelper.sendMessage(room, sender, message.text);
 		}
 	}
 }
