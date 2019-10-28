@@ -108,10 +108,10 @@ export class NotifyTeachersHandler {
 	private listOfStudentsButtonsToSend(students: Array<IUser>): Array<IMessageAction> {
 		return students
 			.sort((a, b) => {
-				return a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1;
+				return a.username.toUpperCase() < b.username.toUpperCase() ? -1 : 1;
 			})
 			.map((member) => ({
-				text: `${member.name}`,
+				text: `${member && member.name ? member.name : member.username}`,
 				type: MessageActionType.BUTTON,
 				msg_in_chat_window: true,
 				msg: `@${member.username}`,

@@ -54,12 +54,23 @@ export class ScratchBotApp extends App implements IPostMessageSent, IPostMessage
 						.run(message);
 				}
 				if (message.room.type === 'd') {
-					return new MicrolearningHandler(
-						new UserHelper(read),
-						new MessageHelper(modify),
-						new StorageHelper(persistence, read.getPersistenceReader()),
-						new Analytics(http, new SettingsHelper(read)),
-					).run(message);
+					if (!message.sender.roles.some((role) => role === 'tutor' || role === 'teacher' || role === 'admin')) {
+						return new LivechatMessageHandler(
+							new RoomHelper(read, modify),
+							new UserHelper(read),
+							new MessageHelper(modify),
+							new NluSdk(http, nluServiceUrl),
+							new StorageHelper(persistence, read.getPersistenceReader()),
+							new SettingsHelper(read))
+							.run(message);
+					} else {
+						return new MicrolearningHandler(
+							new UserHelper(read),
+							new MessageHelper(modify),
+							new StorageHelper(persistence, read.getPersistenceReader()),
+							new Analytics(http, new SettingsHelper(read)),
+						).run(message);
+					}
 				}
 				if (message.room.type === 'c') {
 					return new ChannelHandler(
@@ -82,7 +93,7 @@ export class ScratchBotApp extends App implements IPostMessageSent, IPostMessage
 		await new UpdatedMessagesHandler(new StorageHelper(persistence, read.getPersistenceReader())).run(message);
 		return false;
 	}
-	
+
 	public async onSettingUpdated(setting: ISetting, configurationModify: IConfigurationModify, read: IRead, http: IHttp): Promise<void> {
 		try {
 			if (setting.id !== AppSetting.cronJobServiceUrl && setting.id !== AppSetting.cronJobServiceFrequency) {
